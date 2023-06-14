@@ -17,7 +17,9 @@
 -- 3. Async waits
 
 
-local log = require("log")
+-- Only visual external libraries
+local log = require("log")  -- For timestamps in logs
+local inspect = require("inspect")  -- For displaying arrays with nils in the middle
 
 
 -- Asynchronous toolkit --
@@ -37,7 +39,7 @@ local assembly_line = {
     mechanisms = {
 	function(x)
 	    asleep(1)
-	    return x ^ 2
+	    return x * x  -- ^ would convert to a float
 	end,
 
 	function(x)
@@ -53,6 +55,7 @@ local assembly_line = {
     run_mechanisms = function(self)
 	log.info("Starting mechanisms")
 
+	-- Create coroutines
 	local coroutines = {}
 	for position, mechanism in pairs(self.mechanisms) do
 	    coroutines[position] = coroutine.create(mechanism)
@@ -63,6 +66,7 @@ local assembly_line = {
 	    local counter = 0
 	    local ended_coroutines = {}
 
+	    -- Go over all the coroutines to run them simultaneously
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
@@ -74,10 +78,13 @@ local assembly_line = {
 		end
 	    end
 
+	    -- Remove all ended coroutines
 	    for _, position in ipairs(ended_coroutines) do
 		coroutines[position] = nil
+		log.info("Mechanism #" .. position .. " finished")
 	    end
 
+	    -- Stop if execution has ended
 	    if counter == 0 then
 	    	break
 	    end
@@ -91,6 +98,6 @@ local assembly_line = {
 -- Demo script --
 
 assembly_line.line = {6, 25}
-log.debug("assembly_line == {" .. table.concat(assembly_line.line, ", ") .. "}")
+log.debug("assembly_line == " .. inspect(assembly_line.line))
 assembly_line:run_mechanisms()
-log.debug("assembly_line == {" .. table.concat(assembly_line.line, ", ") .. "}")
+log.debug("assembly_line == " .. inspect(assembly_line.line))
