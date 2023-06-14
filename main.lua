@@ -13,6 +13,7 @@
 -- Dev notes for myself --
 --
 -- 1. Make mechanisms asynchronous
+-- 2. README + github
 
 
 local log = require("log")
@@ -21,7 +22,7 @@ local log = require("log")
 -- API --
 
 local assembly_line = {
-    push_line = function()
+    push_line = function(self)
 	log.info("Pushing the line")
     end
 }
@@ -29,5 +30,5 @@ local assembly_line = {
 
 -- Demo script --
 
-assembly_line.push_line()
+assembly_line:push_line()
 
