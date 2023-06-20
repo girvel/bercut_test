@@ -29,8 +29,8 @@
 
 
 -- Only visual external libraries
-local log = require("log")  -- For timestamps in logs
-local inspect = require("inspect")  -- For displaying arrays with nils in the middle
+local log = require("lib.log")  -- For timestamps in logs
+local inspect = require("lib.inspect")  -- For displaying arrays with nils in the middle
 
 
 -- Asynchronous toolkit --
