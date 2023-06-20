@@ -7,14 +7,25 @@
 --   1.4. (!) Line width
 -- 2. Should I use OOP-style state+behaviour or functional-style stateless functions+arguments?
 -- 3. (?) Version of lua and usage of JIT
--- 4. (?) Should I implement constructors/finalizers, input/output holders for the assembly line or is it a single object?
+-- 4. (?) Should I implement constructors/finalizers, input/output holders for the assembly line or is it a single 
+-- object?
 
 
 -- Dev notes for myself --
 --
--- 1. Make mechanisms asynchronous
+-- -. Make mechanisms asynchronous
 -- 2. README + github
--- 3. Async waits
+-- -. Async waits
+-- 4. Cover with docstrings
+-- 5. Will a bunch of coroutines+asleep+cycle eat CPU? Consider a delay? Run benchmarks?
+-- 6. Array with O(1) index shift
+
+
+-- Implementation notes for the review --
+--
+-- I chose asynchronous architecture, because I've assumed that the mechanisms are external remote devices and you 
+-- need to wait for them to finish execution. If they are just a code abstraction and a part of the same program, I 
+-- would have consider using threading.
 
 
 -- Only visual external libraries
@@ -35,9 +46,10 @@ end
 -- API --
 
 local assembly_line = {
-    line = {},  -- research better data structures for min shifting+indexing time
+    line = {},  -- TODO research better data structures for min shifting+indexing time
     mechanisms = {
 	function(x)
+	    -- imitates waiting for the mechanism to finish working and returning some result
 	    asleep(1)
 	    return x * x  -- ^ would convert to a float
 	end,
@@ -45,6 +57,11 @@ local assembly_line = {
 	function(x)
 	    asleep(2)
 	    return x - 1
+	end,
+
+	function(x)
+	    asleep(1.5)
+	    return x % 24
 	end,
     },
 
@@ -58,7 +75,9 @@ local assembly_line = {
 	-- Create coroutines
 	local coroutines = {}
 	for position, mechanism in pairs(self.mechanisms) do
-	    coroutines[position] = coroutine.create(mechanism)
+	    if self.line[position] ~= nil then
+		coroutines[position] = coroutine.create(mechanism)
+	    end
 	end
 
 	-- Run created coroutines simultaneously
@@ -70,7 +89,8 @@ local assembly_line = {
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
-		local _, result = coroutine.resume(current_coroutine, self.line[position])  -- TODO handle errors (2 kinds)
+		local _, result = coroutine.resume(current_coroutine, self.line[position])
+		-- TODO handle errors (2 kinds)
 
 		if result ~= nil then
 		    self.line[position] = result
@@ -97,7 +117,7 @@ local assembly_line = {
 
 -- Demo script --
 
-assembly_line.line = {6, 25}
+assembly_line.line = {1000000, 1000001}
 log.debug("assembly_line == " .. inspect(assembly_line.line))
 assembly_line:run_mechanisms()
 log.debug("assembly_line == " .. inspect(assembly_line.line))
