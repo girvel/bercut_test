@@ -35,12 +35,14 @@ local inspect = require("lib.inspect")  -- For displaying arrays with nils in th
 
 -- Asynchronous toolkit --
 
-local asleep = function(seconds)
-  local endTime = os.time() + seconds
-  while os.time() < endTime do
-    coroutine.yield()
-  end
-end
+local async = {
+    sleep = function(seconds)
+	local endTime = os.time() + seconds
+	while os.time() < endTime do
+	    coroutine.yield()
+	end
+    end,
+}
 
 
 -- API --
@@ -50,12 +52,12 @@ local assembly_line = {
     mechanisms = {
 	function(x)
 	    -- imitates waiting for the mechanism to finish working and returning some result
-	    asleep(1)
+	    async.sleep(1)
 	    return x * x  -- ^ would convert to a float
 	end,
 
 	function(x)
-	    asleep(2)
+	    async.sleep(2)
 
 	    -- Randomly causes panic from time to time
 	    assert(math.random() >= 0.1, "Random error")
@@ -64,7 +66,7 @@ local assembly_line = {
 	end,
 
 	function(x)
-	    asleep(1.5)
+	    async.sleep(1.5)
 	    return x % 24
 	end,
     },
@@ -104,7 +106,7 @@ local assembly_line = {
 		-- TODO handle errors (2 kinds)
 
 		if not success then
-		    -- TODO extract function async.gather(coroutines, delay, error_handler)
+		    -- TODO extract function async.gather(coroutines, timeout, error_handler)
 		    log.error("Error in mechanism #" .. position .. ": " .. result)
 		    table.insert(ended_coroutines, position)
 		    -- TODO manually handle errors
