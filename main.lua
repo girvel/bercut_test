@@ -37,9 +37,51 @@ local inspect = require("lib.inspect")  -- For displaying arrays with nils in th
 
 local async = {
     sleep = function(seconds)
+	-- consumes CPU, potentially needs blocking sleep function from external library function or OS-dependent
+	-- utilities such as Linux `sleep`
+
 	local endTime = os.time() + seconds
 	while os.time() < endTime do
 	    coroutine.yield()
+	end
+    end,
+
+    run_multiple = function(functions, timeout, error_handler)
+	-- Create coroutines
+	local coroutines = {}
+	for position, f in pairs(functions) do
+	    coroutines[position] = coroutine.create(f)
+	end
+
+	-- Run created coroutines simultaneously
+	while true do
+	    local counter = 0
+	    local ended_coroutines = {}
+
+	    for position, current_coroutine in pairs(coroutines) do
+	    	counter = counter + 1
+
+		local success, result = coroutine.resume(current_coroutine, position)
+		-- TODO handle timeout
+
+		if coroutine.status(current_coroutine) == "dead" then
+		    table.insert(ended_coroutines, position)
+
+		    if not success then
+			error_handler(position, result)
+		    end
+		end
+	    end
+
+	    -- Remove all ended coroutines
+	    for _, position in ipairs(ended_coroutines) do
+		coroutines[position] = nil
+	    end
+
+	    -- Stop if there are no coroutines remaining
+	    if counter == 0 then
+	    	break
+	    end
 	end
     end,
 }
@@ -48,12 +90,12 @@ local async = {
 -- API --
 
 local assembly_line = {
-    line = {},  -- TODO research better data structures for min shifting+indexing time
+    line = {},  -- TODO implement a structure for min shifting+indexing time
     mechanisms = {
 	function(x)
 	    -- imitates waiting for the mechanism to finish working and returning some result
 	    async.sleep(1)
-	    return x * x  -- ^ would convert to a float
+	    return x * x  -- `^` would convert to a float
 	end,
 
 	function(x)
@@ -85,49 +127,23 @@ local assembly_line = {
     run_mechanisms = function(self)
 	log.info("Starting mechanisms")
 
-	-- Create coroutines
+	-- Prep mechanisms with common logic
 	local coroutines = {}
 	for position, mechanism in pairs(self.mechanisms) do
-	    if self.line[position] ~= nil then
-		coroutines[position] = coroutine.create(mechanism)
+	    coroutines[position] = function()
+		if self.line[position] == nil then return end
+		log.debug(position)
+
+		local result = mechanism(self.line[position])
+
+		self.line[position] = result
+		log.info("Mechanism #" .. position .. " finished with result " .. result)
 	    end
 	end
 
-	-- Run created coroutines simultaneously
-	while true do
-	    local counter = 0
-	    local ended_coroutines = {}
-
-	    -- Go over all the coroutines to run them simultaneously
-	    for position, current_coroutine in pairs(coroutines) do
-	    	counter = counter + 1
-
-		local success, result = coroutine.resume(current_coroutine, self.line[position])
-		-- TODO handle errors (2 kinds)
-
-		if not success then
-		    -- TODO extract function async.gather(coroutines, timeout, error_handler)
-		    log.error("Error in mechanism #" .. position .. ": " .. result)
-		    table.insert(ended_coroutines, position)
-		    -- TODO manually handle errors
-
-		elseif result ~= nil then
-		    self.line[position] = result
-		    table.insert(ended_coroutines, position)
-		end
-	    end
-
-	    -- Remove all ended coroutines
-	    for _, position in ipairs(ended_coroutines) do
-		coroutines[position] = nil
-		log.info("Mechanism #" .. position .. " finished")
-	    end
-
-	    -- Stop if execution has ended
-	    if counter == 0 then
-	    	break
-	    end
-	end
+	async.run_multiple(coroutines, 10, function(position, message)
+	    log.error("Mechanism #" .. position .. " finished with error '" .. message .. "'")
+	end)
 
 	log.info("All the mechanisms have stopped")
     end
@@ -138,10 +154,10 @@ local assembly_line = {
 
 math.randomseed(os.time())
 
-local next_number = 1000000
+local current_number = 1000000
 while true do
-    assembly_line.line[1] = next_number
-    next_number = next_number + 1
+    assembly_line.line[1] = current_number
+    current_number = current_number + 1
     log.debug("assembly_line == " .. inspect(assembly_line.line))
 
     assembly_line:run_mechanisms()
