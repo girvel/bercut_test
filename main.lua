@@ -28,7 +28,7 @@
 -- would have consider using threading.
 
 
--- Only visual external libraries
+-- Only cosmetic external libraries
 local log = require("lib.log")  -- For timestamps in logs
 local inspect = require("lib.inspect")  -- For displaying arrays with nils in the middle
 
@@ -133,6 +133,8 @@ local assembly_line = {
 
 
 -- Demo script --
+
+math.randomseed(os.time())
 
 local next_number = 1000000
 while true do
