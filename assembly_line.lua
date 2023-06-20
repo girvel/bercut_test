@@ -2,26 +2,33 @@ local log = require("lib.log")  -- cosmetic library, primarily for timestamped l
 local async = require("async")
 
 
+local imitate_random_errors = function()
+    assert(math.random() >= 0.05, "Random panic")
+
+    if math.random() < 0.05 then
+	async.sleep(60)
+    end
+end
+
+
 return {
     line = {},  -- TODO implement a structure for min shifting+indexing time
     mechanisms = {
 	function(x)
-	    -- imitates waiting for the mechanism to finish working and returning some result
-	    async.sleep(1)
+	    async.sleep(1)  -- imitates waiting for the mechanism to finish working
+	    imitate_random_errors()
 	    return x * x  -- `^` would convert to a float
 	end,
 
 	function(x)
 	    async.sleep(2)
-
-	    -- Randomly causes panic from time to time
-	    assert(math.random() >= 0.1, "Random error")
-
+	    imitate_random_errors()
 	    return x - 1
 	end,
 
 	function(x)
 	    async.sleep(1.5)
+	    imitate_random_errors()
 	    return x % 24
 	end,
     },

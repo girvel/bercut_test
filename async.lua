@@ -1,10 +1,12 @@
+local timeout_error = "Coroutine timeout"
+
 return {
     sleep = function(seconds)
 	-- consumes CPU, potentially needs blocking sleep function from external library function or OS-dependent
 	-- utilities such as Linux `sleep`
 
-	local endTime = os.time() + seconds
-	while os.time() < endTime do
+	local end_time = os.time() + seconds
+	while os.time() < end_time do
 	    coroutine.yield()
 	end
     end,
@@ -16,6 +18,8 @@ return {
 	    coroutines[position] = coroutine.create(f)
 	end
 
+	local start_time = os.time()
+
 	-- Run created coroutines simultaneously
 	while true do
 	    local counter = 0
@@ -24,8 +28,12 @@ return {
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
+		if os.time() - start_time > timeout then
+		    table.insert(ended_coroutines, position)
+		    error_handler(position, timeout_error)
+		end
+
 		local success, result = coroutine.resume(current_coroutine, position)
-		-- TODO handle timeout
 
 		if coroutine.status(current_coroutine) == "dead" then
 		    table.insert(ended_coroutines, position)
@@ -47,5 +55,7 @@ return {
 	    end
 	end
     end,
+
+    timeout_error = timeout_error,
 }
 
