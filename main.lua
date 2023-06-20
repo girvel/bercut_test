@@ -67,6 +67,13 @@ local assembly_line = {
 
     push_line = function(self)
 	log.info("Pushing the line")
+
+	local new_line = {}
+	for position, value in pairs(self.line) do
+	    new_line[position + 1] = value
+	end
+
+	self.line = new_line
     end,
 
     run_mechanisms = function(self)
@@ -117,7 +124,13 @@ local assembly_line = {
 
 -- Demo script --
 
-assembly_line.line = {1000000, 1000001}
-log.debug("assembly_line == " .. inspect(assembly_line.line))
-assembly_line:run_mechanisms()
-log.debug("assembly_line == " .. inspect(assembly_line.line))
+local next_number = 1000000
+while true do
+    assembly_line.line[1] = next_number
+    next_number = next_number + 1
+    log.debug("assembly_line == " .. inspect(assembly_line.line))
+
+    assembly_line:run_mechanisms()
+    assembly_line:push_line()
+end
+
