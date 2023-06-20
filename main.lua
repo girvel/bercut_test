@@ -56,6 +56,10 @@ local assembly_line = {
 
 	function(x)
 	    asleep(2)
+
+	    -- Randomly causes panic from time to time
+	    assert(math.random() >= 0.1, "Random error")
+
 	    return x - 1
 	end,
 
@@ -96,10 +100,16 @@ local assembly_line = {
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
-		local _, result = coroutine.resume(current_coroutine, self.line[position])
+		local success, result = coroutine.resume(current_coroutine, self.line[position])
 		-- TODO handle errors (2 kinds)
 
-		if result ~= nil then
+		if not success then
+		    -- TODO extract function async.gather(coroutines, delay, error_handler)
+		    log.error("Error in mechanism #" .. position .. ": " .. result)
+		    table.insert(ended_coroutines, position)
+		    -- TODO manually handle errors
+
+		elseif result ~= nil then
 		    self.line[position] = result
 		    table.insert(ended_coroutines, position)
 		end
