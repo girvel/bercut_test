@@ -1,5 +1,7 @@
 local log = require("lib.log")  -- cosmetic library, primarily for timestamped logs
 local async = require("async")
+local shell = require("shell")
+local tools = require("tools")
 
 
 local imitate_random_errors = function()
@@ -62,6 +64,7 @@ return {
 
 	async.run_multiple(coroutines, 10, function(position, message)
 	    log.error("Mechanism #" .. position .. " finished with error '" .. message .. "'")
+	    shell(tools.merge_tables(_ENV, {self = self, position = position, message = message}))
 	end)
 
 	log.info("All the mechanisms have stopped")

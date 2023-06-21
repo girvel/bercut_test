@@ -19,6 +19,7 @@ return {
 	end
 
 	local start_time = os.time()
+	local overhead = 0
 
 	-- Run created coroutines simultaneously
 	while true do
@@ -28,7 +29,7 @@ return {
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
-		if os.time() - start_time > timeout then
+		if os.time() - start_time > timeout + overhead then
 		    table.insert(ended_coroutines, position)
 		    error_handler(position, timeout_error)
 		end
@@ -39,7 +40,9 @@ return {
 		    table.insert(ended_coroutines, position)
 
 		    if not success then
+			local time = os.time()
 			error_handler(position, result)
+			overhead = overhead + os.time() - time
 		    end
 		end
 	    end
