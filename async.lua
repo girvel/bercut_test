@@ -5,8 +5,8 @@ return {
 	-- consumes CPU, potentially needs blocking sleep function from external library function or OS-dependent
 	-- utilities such as Linux `sleep`
 
-	local end_time = os.time() + seconds
-	while os.time() < end_time do
+	local end_time = os.clock() + seconds
+	while os.clock() < end_time do
 	    coroutine.yield()
 	end
     end,
@@ -18,7 +18,7 @@ return {
 	    coroutines[position] = coroutine.create(f)
 	end
 
-	local start_time = os.time()
+	local start_time = os.clock()
 	local overhead = 0
 
 	-- Run created coroutines simultaneously
@@ -29,7 +29,7 @@ return {
 	    for position, current_coroutine in pairs(coroutines) do
 	    	counter = counter + 1
 
-		if os.time() - start_time > timeout + overhead then
+		if os.clock() - start_time > timeout + overhead then
 		    table.insert(ended_coroutines, position)
 		    error_handler(position, timeout_error)
 		end
@@ -40,9 +40,9 @@ return {
 		    table.insert(ended_coroutines, position)
 
 		    if not success then
-			local time = os.time()
+			local time = os.clock()
 			error_handler(position, result)
-			overhead = overhead + os.time() - time
+			overhead = overhead + os.clock() - time
 		    end
 		end
 	    end
