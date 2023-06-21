@@ -6,10 +6,10 @@
 -- 04. Cover with docstrings
 -- xx. Will a bunch of coroutines+asleep+cycle eat CPU? Consider a delay? Run benchmarks?
 -- 06. Array with O(1) index shift
--- 07. OS-based blocking sleep -> use it as delay in async.sleep for optimization purposes
--- 08. Consider that coroutine.yield() in async.sleep potentially takes some time
+-- xx. OS-based blocking sleep -> use it as delay in async.sleep for optimization purposes
+-- xx. Consider that coroutine.yield() in async.sleep potentially takes some time
 -- xx. Lua shell for fixing issues
--- 10. Cover w/ tests
+-- 10. Cover w/ tests + testing infoblock in README
 -- xx. Bug: coroutine timeout when using shell
 
 
