@@ -12,6 +12,8 @@ async.sleep = function(seconds)
 end
 
 async.run_multiple = function(functions, timeout, error_handler)
+    error_handler = error_handler or function() end
+
     -- Create coroutines
     local coroutines = {}
     for position, f in pairs(functions) do
@@ -29,7 +31,7 @@ async.run_multiple = function(functions, timeout, error_handler)
 	for position, current_coroutine in pairs(coroutines) do
 	    counter = counter + 1
 
-	    if os.clock() - start_time > timeout + overhead then
+	    if timeout and os.clock() - start_time > timeout + overhead then
 		table.insert(ended_coroutines, position)
 		error_handler(position, async.timeout_error)
 	    end
