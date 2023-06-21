@@ -8,6 +8,8 @@
 -- 6. Array with O(1) index shift
 -- 7. OS-based blocking sleep -> use it as delay in async.sleep for optimization purposes
 -- 8. Consider that coroutine.yield() in async.sleep potentially takes some time
+-- 9. Lua shell for fixing issues
+-- 10. Cover w/ tests
 
 
 -- Implementation notes for the review --
