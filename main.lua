@@ -25,7 +25,6 @@
 
 -- Only cosmetic external libraries
 local log = require("lib.log")  -- For timestamps in logs
-local inspect = require("lib.inspect")  -- Substantially more informative than table.concat
 local assembly_line = require("assembly_line")
 local shell = require("shell")
 local async = require("async")
@@ -49,7 +48,7 @@ local current_number = 1000000
 while true do
     line.line[1] = current_number
     current_number = current_number + 1
-    log.debug("assembly_line == " .. inspect(line.line))
+    log.debug("assembly_line == " .. table.concat(line.line, ', '))
 
     line:run_mechanisms()
     line:push_line()
