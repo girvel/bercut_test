@@ -27,18 +27,31 @@
 local log = require("lib.log")  -- For timestamps in logs
 local inspect = require("lib.inspect")  -- Substantially more informative than table.concat
 local assembly_line = require("assembly_line")
+local shell = require("shell")
+local async = require("async")
 
+
+local imitate_random_errors = function()
+    assert(math.random() >= 0.05, "Random panic")
+
+    if math.random() < 0.05 then
+	async.sleep(60)
+    end
+end
+
+log.info("Creating assembly line")
+local line = assembly_line(imitate_random_errors, shell)
 
 log.info("Assembly line script starts")
 math.randomseed(os.time())
 
 local current_number = 1000000
 while true do
-    assembly_line.line[1] = current_number
+    line.line[1] = current_number
     current_number = current_number + 1
-    log.debug("assembly_line == " .. inspect(assembly_line.line))
+    log.debug("assembly_line == " .. inspect(line.line))
 
-    assembly_line:run_mechanisms()
-    assembly_line:push_line()
+    line:run_mechanisms()
+    line:push_line()
 end
 
