@@ -1,6 +1,6 @@
 # berkut_test
 
-Test task solution for berkut. Imitates an assembly line interface.
+Test task solution for bercut. Imitates an assembly line interface.
 
 ## Implementation notes
 
