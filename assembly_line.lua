@@ -1,15 +1,21 @@
 local log = require("lib.log")  -- cosmetic library, primarily for timestamped logs
 local async = require("async")
 local tools = require("tools")
+local shifting_array = require("shifting_array")
 
 
 --- Create new assembly line
--- @param error_handler function handling errors; receives table with current environment
+-- @param imitate_random_errors Function to raise errors randomly
+-- @param error_handler Function handling errors; receives table with current environment
+-- @param log_level String representing minimal level of displayed log messages; see lib.log
 return function(imitate_random_errors, error_handler, log_level)
     log.level = log_level or "trace"
 
     return {
-	line = {},
+	--- Line itself representing an infinite assembly line with the table of numbers
+	line = shifting_array(),
+
+	--- Functions, representing the launch of each mechanism
 	mechanisms = {
 	    function(x)
 		async.sleep(1)  -- imitates waiting for the mechanism to finish working
@@ -30,17 +36,13 @@ return function(imitate_random_errors, error_handler, log_level)
 	    end,
 	},
 
+	--- Push the line 1 step forward
 	push_line = function(self)
 	    log.info("Pushing the line")
-
-	    local new_line = {}
-	    for position, value in pairs(self.line) do
-		new_line[position + 1] = value
-	    end
-
-	    self.line = new_line
+	    self.line:shift()
 	end,
 
+	--- Launch all mechanisms asynchronously
 	run_mechanisms = function(self)
 	    log.info("Starting mechanisms")
 

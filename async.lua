@@ -1,6 +1,9 @@
+--- Basic async/await implementation
 local async = {}
 
 
+--- Wait for N seconds, allowing other coroutines to resume; basically await sleep(N)
+-- @param seconds Minimal number of seconds to wait. Supports floats.
 async.sleep = function(seconds)
     -- consumes CPU, potentially needs blocking sleep function from external library function or OS-dependent
     -- utilities such as Linux `sleep`
@@ -11,6 +14,11 @@ async.sleep = function(seconds)
     end
 end
 
+--- Run multiple functions asynchronously
+-- @param functions Table of functions to run; any keys, function values.
+-- @param timeout Maximal execution time in seconds; will raise "Timeout error" if exceeded; supports floats.
+-- @param error_handler Function to handle errors inside the coroutines; receives key in `functions` of the failed
+-- coroutine and the error itself.
 async.run_multiple = function(functions, timeout, error_handler)
     error_handler = error_handler or function() end
 
@@ -61,6 +69,7 @@ async.run_multiple = function(functions, timeout, error_handler)
     end
 end
 
+--- Timeout error message
 async.timeout_error = "Async timeout"
 
 

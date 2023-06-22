@@ -1,4 +1,6 @@
+--- Toolkit with general-usage functions
 return {
+    --- Merge two tables to one; prioritizes values from the second table
     merge_tables = function(t1, t2)
 	local result = {}
 

@@ -2,6 +2,8 @@ local inspect = require("lib.inspect")
 local tools = require("tools")
 
 
+--- Launches Lua shell
+-- @param env Lua environment for the shell to be run in.
 return function(env)
     env = env or {}
 
