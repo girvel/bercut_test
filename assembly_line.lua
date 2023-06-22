@@ -5,7 +5,9 @@ local tools = require("tools")
 
 --- Create new assembly line
 -- @param error_handler function handling errors; receives table with current environment
-return function(imitate_random_errors, error_handler) 
+return function(imitate_random_errors, error_handler, log_level)
+    log.level = log_level or "trace"
+
     return {
 	line = {},
 	mechanisms = {
